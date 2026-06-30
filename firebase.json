@@ -1,0 +1,6 @@
+{
+  "firestore": {
+    "database": "ai-studio-remixdiplomacoll-41161469-05b6-40ca-b5fe-5f670b7ae0d1",
+    "rules": "firestore.rules"
+  }
+}

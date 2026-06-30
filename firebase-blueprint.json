@@ -1,0 +1,128 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "Administrator account credentials and status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "username": { "type": "string" },
+        "passwordHash": { "type": "string" }
+      },
+      "required": ["id", "username", "passwordHash"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student profile and biographical information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "pin": { "type": "string" },
+        "name": { "type": "string" },
+        "rollNumber": { "type": "string" },
+        "regNumber": { "type": "string" },
+        "department": { "type": "string" },
+        "semester": { "type": "integer" },
+        "mobile": { "type": "string" },
+        "email": { "type": "string" },
+        "parentName": { "type": "string" },
+        "parentMobile": { "type": "string" },
+        "dob": { "type": "string" },
+        "address": { "type": "string" }
+      },
+      "required": ["id", "pin", "name", "rollNumber", "regNumber", "semester"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Academic subjects for courses and class tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "semester": { "type": "integer" },
+        "name": { "type": "string" },
+        "department": { "type": "string" }
+      },
+      "required": ["id", "semester", "name"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily attendance record for a student on a specific date",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "studentId": { "type": "integer" },
+        "date": { "type": "string" },
+        "subject": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "studentId", "date", "subject", "status"]
+    },
+    "Notice": {
+      "title": "Notice",
+      "description": "Announcements and notice board broadcasts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "date": { "type": "string" }
+      },
+      "required": ["id", "title", "content", "date"]
+    },
+    "Request": {
+      "title": "Request",
+      "description": "Student request or support query regarding attendance corrections",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "studentId": { "type": "integer" },
+        "date": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "adminReply": { "type": "string" }
+      },
+      "required": ["id", "studentId", "date", "subject", "message", "status"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Global settings parameters like signup locks",
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" },
+        "value": { "type": "string" }
+      },
+      "required": ["key", "value"]
+    }
+  },
+  "firestore": {
+    "admins": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "List of system administrators"
+    },
+    "students": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Registry of enrolled students"
+    },
+    "subjects": {
+      "schema": { "$ref": "#/entities/Subject" },
+      "description": "List of academic course subjects"
+    },
+    "attendance": {
+      "schema": { "$ref": "#/entities/Attendance" },
+      "description": "Student attendance database"
+    },
+    "notices": {
+      "schema": { "$ref": "#/entities/Notice" },
+      "description": "Official notices from administrators"
+    },
+    "requests": {
+      "schema": { "$ref": "#/entities/Request" },
+      "description": "Attendance query correction requests"
+    },
+    "settings": {
+      "schema": { "$ref": "#/entities/Setting" },
+      "description": "System-wide settings cache"
+    }
+  }
+}

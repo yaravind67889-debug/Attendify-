@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Diploma College (CSE) Attendance System",
+  "description": "A modern, secure college ERP for managing student attendance, requests, and notices with role-based access.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

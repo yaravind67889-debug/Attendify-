@@ -1,0 +1,146 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Check if the caller is an Admin
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Helper to validate Admin fields
+    function isValidAdmin(data) {
+      return (data.keys().hasAll(['id', 'username', 'passwordHash']) || data.keys().hasAll(['id', 'username', 'password_hash']))
+         && data.keys().size() == 3
+         && data.id is int
+         && data.username is string && data.username.size() <= 100;
+    }
+
+    // Helper to validate Student fields
+    function isValidStudent(data) {
+      return (data.keys().hasAll(['id', 'pin', 'name', 'rollNumber', 'regNumber', 'semester']) || data.keys().hasAll(['id', 'pin', 'name', 'roll_number', 'reg_number', 'semester']))
+        && data.id is int
+        && data.pin is string && data.pin.size() <= 50
+        && data.name is string && data.name.size() <= 150
+        && data.semester is int;
+    }
+
+    // Helper to validate Subject fields
+    function isValidSubject(data) {
+      return data.keys().hasAll(['id', 'semester', 'name'])
+        && data.id is int
+        && data.semester is int
+        && data.name is string && data.name.size() <= 150
+        && (!data.keys().contains('department') || data.department is string);
+    }
+
+    // Helper to validate Attendance fields
+    function isValidAttendance(data) {
+      return (data.keys().hasAll(['id', 'studentId', 'date', 'subject', 'status']) || data.keys().hasAll(['id', 'student_id', 'date', 'subject', 'status']))
+        && data.keys().size() == 5
+        && data.id is int
+        && data.date is string && data.date.size() == 10
+        && data.subject is string && data.subject.size() <= 150
+        && data.status is string && (data.status == 'present' || data.status == 'absent' || data.status == 'leave');
+    }
+
+    // Helper to validate Notice fields
+    function isValidNotice(data) {
+      return data.keys().hasAll(['id', 'title', 'content', 'date'])
+        && data.keys().size() == 4
+        && data.id is int
+        && data.title is string && data.title.size() <= 250
+        && data.content is string && data.content.size() <= 10000
+        && data.date is string && data.date.size() == 10;
+    }
+
+    // Helper to validate Request fields
+    function isValidRequest(data) {
+      return (data.keys().hasAll(['id', 'studentId', 'date', 'subject', 'message', 'status']) || data.keys().hasAll(['id', 'student_id', 'date', 'subject', 'message', 'status']))
+        && data.id is int
+        && data.date is string && data.date.size() == 10
+        && data.subject is string && data.subject.size() <= 200
+        && data.message is string && data.message.size() <= 2000
+        && data.status is string && (data.status == 'pending' || data.status == 'approved' || data.status == 'rejected');
+    }
+
+    // Helper to validate Setting fields
+    function isValidSetting(data) {
+      return data.keys().hasAll(['key', 'value'])
+        && data.keys().size() == 2
+        && data.key is string && data.key.size() <= 100
+        && data.value is string && data.value.size() <= 500;
+    }
+
+    // Admins Match
+    match /admins/{adminId} {
+      allow read: if true;
+      allow create, update, delete: if isValidAdmin(incoming());
+    }
+
+    // Students Match
+    match /students/{studentId} {
+      allow read: if true;
+      allow create: if isValidStudent(incoming());
+      allow update: if isValidStudent(incoming());
+      allow delete: if true;
+    }
+
+    // Subjects Match
+    match /subjects/{subjectId} {
+      allow read: if true;
+      allow create, update, delete: if isValidSubject(incoming());
+    }
+
+    // Attendance Match
+    match /attendance/{attendanceId} {
+      allow read: if true;
+      allow create, update, delete: if isValidAttendance(incoming());
+    }
+
+    // Notices Match
+    match /notices/{noticeId} {
+      allow read: if true;
+      allow create, update, delete: if isValidNotice(incoming());
+    }
+
+    // Requests Match
+    match /requests/{requestId} {
+      allow read: if true;
+      allow create: if isValidRequest(incoming());
+      allow update: if isValidRequest(incoming());
+      allow delete: if true;
+    }
+
+    // Settings Match
+    match /settings/{settingKey} {
+      allow read: if true;
+      allow write: if isValidSetting(incoming());
+    }
+  }
+}
